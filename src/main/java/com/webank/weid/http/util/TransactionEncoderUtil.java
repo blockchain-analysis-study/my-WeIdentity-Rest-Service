@@ -238,6 +238,8 @@ public class TransactionEncoderUtil {
     /**
      * Extract and build Input arg for all Service APIs.
      *
+     * todo 提取并构建所有服务API的输入arg
+     *
      * @param inputJson the inputJson String
      * @return An InputArg instance
      */
@@ -249,7 +251,10 @@ public class TransactionEncoderUtil {
                 logger.error("Null input within: {}", inputJson);
                 return new HttpResponseData<>(null, HttpReturnCode.INPUT_NULL);
             }
+
+            // 从 json中提取 `functionName` 字段
             JsonNode functionNameNode = jsonNode.get(WeIdentityParamKeyConstant.FUNCTION_NAME);
+            // 从 json中提取 `v` 字段
             JsonNode versionNode = jsonNode.get(WeIdentityParamKeyConstant.API_VERSION);
             if (functionNameNode == null || StringUtils.isEmpty(functionNameNode.textValue())) {
                 logger.error("Null input within: {}", jsonNode.toString());
@@ -260,11 +265,14 @@ public class TransactionEncoderUtil {
                 return new HttpResponseData<>(null, HttpReturnCode.VER_ILLEGAL);
             }
             // Need to use toString() for pure Objects and textValue() for pure String
+            //
+            // 从 json中提取 `functionArg` 字段
             JsonNode functionArgNode = jsonNode.get(WeIdentityParamKeyConstant.FUNCTION_ARG);
             if (functionArgNode == null || StringUtils.isEmpty(functionArgNode.toString())) {
                 logger.error("Null input within: {}", jsonNode.toString());
                 return new HttpResponseData<>(null, HttpReturnCode.FUNCARG_ILLEGAL);
             }
+            // 从 json中提取 `transactionArg` 字段
             JsonNode txnArgNode = jsonNode.get(WeIdentityParamKeyConstant.TRANSACTION_ARG);
             if (txnArgNode == null || StringUtils.isEmpty(txnArgNode.toString())) {
                 logger.error("Null input within: {}", jsonNode.toString());
@@ -274,10 +282,10 @@ public class TransactionEncoderUtil {
             String functionArg = functionArgNode.toString();
             String txnArg = txnArgNode.toString();
             InputArg inputArg = new InputArg();
-            inputArg.setFunctionArg(functionArg);
-            inputArg.setTransactionArg(txnArg);
-            inputArg.setFunctionName(functionNameNode.textValue());
-            inputArg.setV(versionNode.textValue());
+            inputArg.setFunctionArg(functionArg);  // 写入 `functionArg` 字段
+            inputArg.setTransactionArg(txnArg);    // 写入 `transactionArg` 字段
+            inputArg.setFunctionName(functionNameNode.textValue()); // 写入 `functionName` 字段
+            inputArg.setV(versionNode.textValue());                 // 写入 `V`字段
             return new HttpResponseData<>(inputArg, HttpReturnCode.SUCCESS);
         } catch (Exception e) {
             logger.error("Json Extraction error within: {}", inputJson);

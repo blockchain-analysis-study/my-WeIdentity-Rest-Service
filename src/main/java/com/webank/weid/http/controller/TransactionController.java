@@ -52,12 +52,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = WeIdentityServiceEndpoint.API_ROOT)
 public class TransactionController {
 
+    //
     @Autowired
     private TransactionService transactionService;
 
+    // 内置 endpointService
     @Autowired
     private EndpointService endpointService;
 
+    //
     @Autowired
     private AuthService authService;
 
@@ -65,6 +68,8 @@ public class TransactionController {
 
     /**
      * Create an Encoded Transaction.
+     *
+     * todo 创建编码交易
      *
      * @param encodeTransactionJsonArgs the json format args. It should contain two keys: inputParams (including all business related params as well
      * as signatures if required), and functionName. Hereafter, functionName will decide which WeID SDK method to engage, and assemble the inputParams
@@ -81,6 +86,8 @@ public class TransactionController {
     /**
      * Send a signed Transaction to Chain.
      *
+     * todo 将已签名的交易发送给Chain
+     *
      * @param sendTransactionJsonArgs the json format args. It should contain three keys: the same inputParams as in the createEncodeTransaction case,
      * the signedMessage based on previous encodedTransaction, and the functionName as to decide the SDK method endpoint.
      * @return the json string from SDK response.
@@ -93,6 +100,8 @@ public class TransactionController {
 
     /**
      * Invoke an SDK function.
+     *
+     * todo 调用SDK功能
      *
      * @param invokeFunctionJsonArgs the json format args. It should contain three keys: the same inputParams as in the createEncodeTransaction case,
      * the signedMessage based on previous encodedTransaction, and the functionName as to decide the SDK method endpoint.
@@ -107,6 +116,8 @@ public class TransactionController {
     /**
      * Get all registered Endpoints from endpoint services.
      *
+     * todo 从端点服务获取所有注册的端点
+     *
      * @return endpoint info list.
      */
     @RequestMapping(value = WeIdentityServiceEndpoint.EPS_ROOT, method = RequestMethod.GET)
@@ -116,6 +127,8 @@ public class TransactionController {
 
     /**
      * Invoke an endpoint service (in PathVariable format).
+     *
+     * todo 调用端点服务 (PathVariable格式)
      *
      * @return endpoint info list.
      */
@@ -145,6 +158,8 @@ public class TransactionController {
     /**
      * Get an endpoint info.
      *
+     * todo 获取端点信息
+     *
      * @return endpoint info list.
      */
     @RequestMapping(value = WeIdentityServiceEndpoint.EPS_ROOT
@@ -155,6 +170,8 @@ public class TransactionController {
 
     /**
      * Fetch data from other endpoint.
+     *
+     * todo 从其他端点获取数据
      *
      * @return data in String
      */
@@ -193,6 +210,12 @@ public class TransactionController {
         }
     }
 
+
+    /**
+     * todo 请求 nonce ？？？？
+     * @param requestBody
+     * @return
+     */
     @RequestMapping(value = WeIdentityServiceEndpoint.AUTHO_ROOT
         + "/" + WeIdentityServiceEndpoint.AUTHO_REQUEST_NONCE, method = RequestMethod.POST)
     public HttpResponseData<String> authRequestToken(@RequestBody String requestBody) {

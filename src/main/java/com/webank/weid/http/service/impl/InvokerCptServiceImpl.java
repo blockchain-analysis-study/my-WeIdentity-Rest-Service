@@ -70,6 +70,8 @@ public class InvokerCptServiceImpl extends BaseService implements InvokerCptServ
             JsonNode cptJsonSchemaNode = functionArgNode.get(ParamKeyConstant.CPT_JSON_SCHEMA);
             JsonNode txnArgNode = new ObjectMapper()
                 .readTree(registerArgs.getTransactionArg());
+
+            // 入参 key的 index `invokerWeId` ??
             JsonNode keyIndexNode = txnArgNode.get(WeIdentityParamKeyConstant.KEY_INDEX);
             if (weIdNode == null || StringUtils.isEmpty(weIdNode.textValue())
                 || cptJsonSchemaNode == null || StringUtils.isEmpty(cptJsonSchemaNode.toString())
@@ -77,6 +79,8 @@ public class InvokerCptServiceImpl extends BaseService implements InvokerCptServ
                 return new HttpResponseData<>(null, HttpReturnCode.INPUT_NULL);
             }
 
+
+            // admin private key 的 path
             String weIdPrivKey = KeyUtil
                 .getPrivateKeyByWeId(KeyUtil.SDK_PRIVKEY_PATH, keyIndexNode.textValue());
             if (StringUtils.isEmpty(weIdPrivKey)) {

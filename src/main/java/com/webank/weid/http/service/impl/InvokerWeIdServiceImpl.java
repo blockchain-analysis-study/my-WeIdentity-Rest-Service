@@ -224,6 +224,8 @@ public class InvokerWeIdServiceImpl extends BaseService implements InvokerWeIdSe
             if (createWeIdDataResult != null) {
                 try {
                     // host the weId which just got crekated
+                    //
+                    // 将创建的 WeId 及对应的 privateKey 等进行存储到 file中
                     KeyUtil.savePrivateKey(KeyUtil.SDK_PRIVKEY_PATH,
                         createWeIdDataResult.getWeId(),
                         createWeIdDataResult.getUserWeIdPrivateKey().getPrivateKey());

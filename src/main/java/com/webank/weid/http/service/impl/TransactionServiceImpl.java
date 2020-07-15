@@ -67,6 +67,8 @@ public class TransactionServiceImpl extends BaseService implements TransactionSe
     /**
      * Create an Encoded Transaction.
      *
+     * todo 对 tx进行编码
+     *
      * @param encodeTransactionJsonArgs json format args. It should contain 4 keys: functionArgs (including all business related params),
      * transactionArgs, functionName and apiVersion. Hereafter, functionName will decide which WeID SDK method to engage, and assemble all input
      * params into SDK readable format to send there; apiVersion is for extensibility purpose.
@@ -84,9 +86,13 @@ public class TransactionServiceImpl extends BaseService implements TransactionSe
                 return new HttpResponseData<>(null, resp.getErrorCode(), resp.getErrorMessage());
             }
 
+            // 获取 func的Name
             String functionName = inputArg.getFunctionName();
+            // 获取 func的Args
             String functionArg = inputArg.getFunctionArg();
             HttpResponseData<String> httpResponseData;
+
+            // createCredentialPojo:
             if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_CREATE_CREDENTIALPOJO)) {
                 HttpResponseData<Object> credResp = TransactionEncoderUtilV2.encodeCredential(inputArg);
                 return new HttpResponseData<>(credResp.getRespBody(), credResp.getErrorCode(),
@@ -95,7 +101,7 @@ public class TransactionServiceImpl extends BaseService implements TransactionSe
 
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode txnArgNode = objectMapper.readTree(inputArg.getTransactionArg());
-            JsonNode nonceNode = txnArgNode.get(WeIdentityParamKeyConstant.NONCE);
+            JsonNode nonceNode = txnArgNode.get(WeIdentityParamKeyConstant.NONCE); // nonce:
             if (nonceNode == null || StringUtils.isEmpty(nonceNode.textValue())) {
                 logger.error("Null input within: {}", txnArgNode.toString());
                 return new HttpResponseData<>(null, HttpReturnCode.NONCE_ILLEGAL);
@@ -106,6 +112,7 @@ public class TransactionServiceImpl extends BaseService implements TransactionSe
             fiscoConfig.load();
             ContractConfig config = PropertiesUtil.buildContractConfig(fiscoConfig);
             if (TransactionEncoderUtil.isFiscoBcosV1()) {
+                // createWeId:
                 if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_CREATE_WEID)) {
                     httpResponseData = TransactionEncoderUtil
                         .createWeIdEncoder(functionArg, nonce, config.getWeIdAddress());
@@ -114,6 +121,7 @@ public class TransactionServiceImpl extends BaseService implements TransactionSe
                         httpResponseData.getErrorCode(),
                         httpResponseData.getErrorMessage());
                 }
+                // registerAuthorityIssuer:
                 if (functionName
                     .equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_REGISTER_AUTHORITY_ISSUER)) {
                     httpResponseData = TransactionEncoderUtil
@@ -123,6 +131,7 @@ public class TransactionServiceImpl extends BaseService implements TransactionSe
                         httpResponseData.getErrorCode(),
                         httpResponseData.getErrorMessage());
                 }
+                // registerCpt:
                 if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_REGISTER_CPT)) {
                     httpResponseData = TransactionEncoderUtil
                         .registerCptEncoder(functionArg, nonce, config.getCptAddress());
@@ -290,41 +299,52 @@ public class TransactionServiceImpl extends BaseService implements TransactionSe
         }
         String functionName = inputArg.getFunctionName();
         try {
+            // createCredential:
             if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_CREATE_CREDENTIAL)) {
                 return invokerCredentialService.createCredentialInvoke(inputArg);
             }
+            // createCredentialPojo:
             if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_CREATE_CREDENTIALPOJO)) {
                 return invokerCredentialService.createCredentialPojoInvoke(inputArg);
             }
+            // verifyCredential:
             if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_VERIFY_CREDENTIAL)) {
                 return invokerCredentialService.verifyCredentialInvoke(inputArg);
             }
+            // verifyCredentialPojo:
             if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_VERIFY_CREDENTIALPOJO)) {
                 HttpResponseData<Boolean> respData = invokerCredentialService.verifyCredentialPojoInvoke(inputArg);
                 return new HttpResponseData<>(respData.getRespBody(), respData.getErrorCode(), respData.getErrorMessage());
             }
+            // queryAuthorityIssuer:
             if (functionName
                 .equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_QUERY_AUTHORITY_ISSUER)) {
                 return invokerAuthorityIssuerService.queryAuthorityIssuerInfoInvoke(inputArg);
             }
+            // getWeIdDocument || getWeIdDocumentJson:
             if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_GET_WEID_DOCUMENT)
                 || functionName
                 .equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_GET_WEID_DOCUMENT_JSON)) {
                 return invokerWeIdService.getWeIdDocumentJsonInvoke(inputArg);
             }
+            // queryCpt:
             if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_QUERY_CPT)) {
                 return invokerCptService.queryCptInvoke(inputArg);
             }
+            // createWeId:
             if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_CREATE_WEID)) {
                 return invokerWeIdService.createWeIdInvoke(inputArg);
             }
+            // registerCpt:
             if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_REGISTER_CPT)) {
                 return invokerCptService.registerCptInvoke(inputArg);
             }
+            // registerAuthorityIssuer:
             if (functionName
                 .equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_REGISTER_AUTHORITY_ISSUER)) {
                 return invokerAuthorityIssuerService.registerAuthorityIssuerInvoke(inputArg);
             }
+            // getWeIdDocumentByOrgId:
             if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_GET_WEID_DOCUMENT_BY_ORG)) {
                 String weId = (String) invokerAuthorityIssuerService.getWeIdByNameInvoke(inputArg).getRespBody();
                 // Construct new InputArg
@@ -333,22 +353,28 @@ public class TransactionServiceImpl extends BaseService implements TransactionSe
                 inputArg.setFunctionArg(JsonUtil.objToJsonStr(funcArgMap));
                 return invokerWeIdService.getWeIdDocumentJsonInvoke(inputArg);
             }
+            // createEvidence:
             if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_CREATE_EVIDENCE_FOR_LITE_CREDENTIAL)) {
                 // 1. call createevidencewithcustomkeyandlog
                 return invokerEvidenceService.createEvidenceWithExtraInfo(inputArg);
             }
+            // createWeIdWithPubKey:
             if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_CREATE_WEID_WITH_PUBKEY)) {
                 return invokerWeIdService.createWeIdWithPubKey(inputArg);
             }
+            // verifyLiteCredential:
             if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_VERIFY_LITE_CREDENTIAL)) {
                 return invokerEvidenceService.getEvidenceByCustomKey(inputArg);
             }
+            // createCredentialAndEncrypt:
             if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_ECCENCRYPT_CREDENTIAL)) {
                 return invokerCredentialService.createCredentialPojoAndEncryptInvoke(inputArg);
             }
+            // eccEncrypt:
             if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_ECCENCRYPT)) {
                 return invokerCredentialService.eccEncrypt(inputArg);
             }
+            // eccDecrypt:
             if (functionName.equalsIgnoreCase(WeIdentityFunctionNames.FUNCNAME_ECCDECRYPT)) {
                 return invokerCredentialService.eccDecrypt(inputArg);
             }

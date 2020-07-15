@@ -98,6 +98,8 @@ public class KeyUtil {
     /**
      * get the private key by weId.
      *
+     * todo 根据 weId 获取对应 weId的 privateKey
+     *
      * @param path the path
      * @param weId the weId
      * @return returns the private key
